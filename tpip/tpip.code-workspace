@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../t-crest/patmos"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"fcntl.h": "c",
+			"eth_mac_driver.h": "c",
+			"tpip.h": "c",
+			"tte.h": "c"
+		}
+	}
+}

@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "tte.h"
+#include "ethlib/tte.h"
+#include "tpip.h"
 #include "slip.h"
 
 /* Test TTEthernet: should transfer data between PC and FPGA
@@ -16,37 +17,22 @@
 //Buffer for store the input/output data 
 static unsigned char bufin[2000];
 static unsigned char bufout[2000];
+unsigned char CT[] = { 0xAB, 0xAD, 0xBA, 0xBE };
+unsigned char VL0[] = { 0x0F, 0xA1 };
+int sched_errors = 0;
 int main() {
     memset(bufin, 0, sizeof(bufin));
     memset(bufout, 0, sizeof(bufout));
     // initial serial port, open ttyUSB1 
-    if(!initserial())
-	    printf("ERROR: Serial port is not initialized");
-    // clean the UART internal buffer
-    int clearcount = serialclear();
-    printf("PC Step 0: Clear serial port for old data: %d bytes\n", clearcount);
-    
-    // here I need a new receive function, I donot need the ESC
-    // END treatment, the basic function that get char from the UART
-    // is useful
-    int count = serialreceive(bufin, sizeof(bufin));
-
-    // print the thing we receive from PATMOS FPGA
-    printf("How many received in BUFIN: ");
-    bufprint(bufin, count);
-    printf("\n"); 
-    
-    //store the data in to ipin
-    ip_t *ipin = malloc(sizeof(ip_t));
-    ipin->udp.data = (char[]){0,0,0,0};
-    unpackip(ipin, bufin);
-
-    printf("ipin:\n");
-    printipdatagram(ipin);
-    printf("\n");
-    
+    // how to use ethernet port?
+    // if(!initserial())
+	//     printf("ERROR: Serial port is not initialized");
+    // // clean the UART internal buffer
+    // int clearcount = serialclear();
+    // printf("PC Step 0: Clear serial port for old data: %d bytes\n", clearcount);
     // build up an IP package, send to FPGA
     // first clean the obb flag
+    ip_t *ipin = malloc(sizeof(ip_t));
     obb_t obb_msg_ack;
     obb_t *obb_msg = (obb_t *) ipin->udp.data;
     if(obb_msg->flags)
@@ -73,6 +59,28 @@ int main() {
     int len = packip(bufout, &ipoutack);
     bufprint(bufout, len);
     // need a new send function, support ETHERNET PROTOCOL
-    int sent = serialsend(bufout, len);
+    // here I need a new receive function, I donot need the ESC
+    // END treatment, the basic function that get char from the UART
+    // is useful
+    // int count = serialreceive(bufin, sizeof(bufin));
+    tte_prepare_data(0x2000, VL0, bufout, 1514);
+    if (!tte_schedule_send(0x2000, 1514, 0))
+          sched_errors++;
+    // print the thing we receive from PATMOS FPGA
+    printf("How many received in BUFIN: ");
+    bufprint(bufin, count);
+    printf("\n"); 
+    
+    //store the data in to ipin
+    ip_t *ipin = malloc(sizeof(ip_t));
+    ipin->udp.data = (char[]){0,0,0,0};
+    unpackip(ipin, bufin);
+
+    printf("ipin:\n");
+    printipdatagram(ipin);
+    printf("\n");
+    
+    
+    
     return 0;
 }

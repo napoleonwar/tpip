@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "~/t-crest/patmos/c/ethlib",
+                "~/t-crest/patmos/c/",
                 "~/t-crest/patmos/",
                 "~/t-crest/newlib/newlib/libc/machine/patmos/"
             ],
